@@ -17,6 +17,11 @@ This repository contains our code and report for Project 1 of the EPFL Machine L
 * **Python Version:** Python 3.x
 * **Allowed Libraries:** Python standard libraries, `NumPy`, and visualization libraries (`matplotlib`, `seaborn`) used strictly for plotting. **No external ML libraries (e.g., Scikit-Learn, Pandas) are allowed.**
 
+## Dataset
+Download the project data from the [AIcrowd Project 1 dataset page](https://www.aicrowd.com/challenges/epfl-machine-learning-project-1/dataset_files), under **Resources**.
+
+Place the downloaded files in the `dataset/` directory before running the project.
+
 ## How to Run
 Create the project environment from `grading_tests copie/environment.yml`, then run:
 
