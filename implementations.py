@@ -98,7 +98,19 @@ def sigmoid(t):
 
 
 def compute_logistic_loss(y, tx, w):
-    """Logistic loss implementation."""
+    """Logistic loss implementation.
+    
+    Inputs :
+
+    - y ndarray (N, ) : labels
+
+    - tx ndarray (N, D) : data matrix
+
+    - w ndarray (D, ) : weights
+
+    Returns :
+
+    - loss float : cross-entropy loss for logistic regression     """
 
     N = y.shape[0]
 
