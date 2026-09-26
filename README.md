@@ -23,14 +23,34 @@ Download the project data from the [AIcrowd Project 1 dataset page](https://www.
 Place the downloaded files in the `dataset/` directory before running the project.
 
 ## How to Run
-Create the project environment from `grading_tests copie/environment.yml`, then run:
+Create the project environment from `grading_tests/environment.yml`, then run:
 
 ```bash
+conda env create -f grading_tests/environment.yml -n project1-grading
+conda activate project1-grading
 python run.py
 ```
 
-To run the public checks locally:
+On Apple Silicon, if the pinned `scikit-learn` version is unavailable, create the
+test environment with only the packages required by the public tests:
 
 ```bash
-pytest "grading_tests copie" --github_link .
+conda create -n project1-grading python=3.9 numpy pytest gitpython black
+```
+
+## Automated Tests
+The public tests check the function signatures and the expected results of the implementations.
+
+Run all tests with:
+
+```bash
+./test.sh
+```
+
+The GitHub link format test is excluded for local testing because the project is passed as the local path `.`.
+
+To run only the tests related to one function, use pytest's `-k` option:
+
+```bash
+./test.sh -k least_squares
 ```
