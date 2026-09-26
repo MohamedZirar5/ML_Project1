@@ -98,8 +98,20 @@ def sigmoid(t):
 
 
 def compute_logistic_loss(y, tx, w):
-    raise NotImplementedError
+    """Logistic loss implementation."""
 
+    N = y.shape[0]
+
+    # pred = tx @ w is the linear prediction.
+    pred = tx @ w
+
+    # Starting from the cross-entropy loss and replacing the sigmoid,
+    # we obtain the equivalent expression:
+    # log(1 + exp(pred)) - y * pred.
+    # np.logaddexp(0, pred) computes log(exp(0) + exp(pred)) = log(1 + exp(pred)).
+    loss = np.sum(np.logaddexp(0, pred) - y * pred) / N
+
+    return loss
 
 def compute_logistic_gradient(y, tx, w):
     raise NotImplementedError
@@ -110,3 +122,6 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     raise NotImplementedError
+    # w = initial_w
+    # for _ in range(max_iters):
+    #     grad = compute_gradient(y, tx, w)
