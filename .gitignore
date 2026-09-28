@@ -6,3 +6,7 @@ dataset/*.csv
 updates/*
 .venv
 .pytest_cache
+dataset/cleaned_x_train.npy
+dataset/cleaned_y_train.npy
+dataset/cleaned_x_test.npy
+dataset/cleaning_statistics.npz
