@@ -117,7 +117,7 @@ def compute_logistic_loss(y, tx, w):
     # pred = tx @ w is the linear prediction.
     pred = tx @ w
 
-    # Starting from the cross-entropy loss and replacing the sigmoid,
+    # Starting from the cross-entropy loss and replacing the sigmoid then rearranging,
     # we obtain the equivalent expression:
     # log(1 + exp(pred)) - y * pred.
     # np.logaddexp(0, pred) computes log(exp(0) + exp(pred)) = log(1 + exp(pred)).
@@ -126,14 +126,68 @@ def compute_logistic_loss(y, tx, w):
     return loss
 
 def compute_logistic_gradient(y, tx, w):
-    raise NotImplementedError
+    """Gradient of the logistic loss implementation.
 
+    Inputs :
+    - y ndarray (N, ) : labels
+    - tx ndarray (N, D) : data matrix
+    - w ndarray (D, ) : weights
+
+    Returns :
+    - gradient ndarray (D, ) : gradient of the cross-entropy loss
+    """
+
+    N = y.shape[0]
+
+    # pred = tx @ w is the linear prediction.
+    pred = tx @ w
+
+    # sigmoid(pred) converts the linear prediction into probabilities
+    # between 0 and 1.
+    prob = sigmoid(pred)
+
+    # The gradient of the cross-entropy loss is
+    # X^T (sigmoid(pred) - y), averaged over all samples, using the chain rule.
+    gradient = tx.T @ (prob - y) / N
+
+    return gradient
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     raise NotImplementedError
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
-    raise NotImplementedError
-    # w = initial_w
-    # for _ in range(max_iters):
-    #     grad = compute_gradient(y, tx, w)
+    """Regularized logistic regression using gradient descent.
+
+    Inputs :
+    - y ndarray (N, ) : labels
+    - tx ndarray (N, D) : data matrix
+    - lambda_ float : regularization strength
+    - initial_w ndarray (D, ) : initial weights
+    - max_iters int : number of iterations
+    - gamma float : learning rate
+
+    Returns :
+    - w ndarray (D, ) : final weights
+    - loss float : final regularized logistic loss
+    """
+
+    w = initial_w
+
+    for _ in range(max_iters):
+
+        # Compute the gradient of the logistic loss.
+        grad = compute_logistic_gradient(y, tx, w)
+
+        # Add the gradient of the L2 regularization term.
+        grad += lambda_ * w
+
+        # Gradient descent update.
+        w -= gamma * grad
+
+    # Compute the logistic loss.
+    loss = compute_logistic_loss(y, tx, w)
+
+    # Add the L2 regularization penalty.
+    loss += lambda_ / 2 * np.sum(w ** 2)
+
+    return w, loss
