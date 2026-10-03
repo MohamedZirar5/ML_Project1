@@ -1,4 +1,4 @@
-"""Tests for the functions implemented in code/implementations.py.
+"""Tests for the functions implemented in implementations.py.
 
 Run from the repository root with:
     pytest code/scripts/test_implementations.py -v
@@ -10,7 +10,7 @@ import sys
 import numpy as np
 import pytest
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
 import implementations as impl  # noqa: E402
 
 RTOL = 1e-4

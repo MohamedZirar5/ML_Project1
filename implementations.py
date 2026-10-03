@@ -86,24 +86,22 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
 
 
 def least_squares(y, tx):
-    "Implementation of Least squares regression using normal equations."
-    A = tx.T @ tx 
+    """Least-squares regression using the normal equations."""
+
+    A = tx.T @ tx
     b = tx.T @ y
-    w = np.linalg.solve(A , b)
-    e = y - tx @ w
-    mse = (1 / (2 * len(y))) * (e @ e) #### reutiliser apres une fonction deja implemente??????
-    return w, mse
+    w = np.linalg.solve(A, b)
+    return w, compute_loss(y, tx, w)
 
 
 def ridge_regression(y, tx, lambda_):
-    "Implementation of Ridge regression using normal equations."
+    """Ridge regression using the regularized normal equations."""
+
     N, D = tx.shape
     A = tx.T @ tx + 2 * N * lambda_ * np.eye(D)
     b = tx.T @ y
     w = np.linalg.solve(A, b)
-    e = y - tx @ w
-    mse = (1 / (2 * N)) * (e @ e)
-    return w, mse
+    return w, compute_loss(y, tx, w)
 
 
 def sigmoid(t):
@@ -139,14 +137,52 @@ def compute_logistic_loss(y, tx, w):
     return loss
 
 def compute_logistic_gradient(y, tx, w):
-    raise NotImplementedError
+    """Gradient of the logistic loss implementation.
+
+    Inputs :
+    - y ndarray (N, ) : labels
+    - tx ndarray (N, D) : data matrix
+    - w ndarray (D, ) : weights
+
+    Returns :
+    - gradient ndarray (D, ) : gradient of the cross-entropy loss
+    """
+
+    N = y.shape[0]
+    pred = tx @ w
+    prob = sigmoid(pred)
+    gradient = tx.T @ (prob - y) / N
+
+    return gradient
 
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     raise NotImplementedError
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
-    raise NotImplementedError
-    # w = initial_w
-    # for _ in range(max_iters):
-    #     grad = compute_gradient(y, tx, w)
+    """Regularized logistic regression using gradient descent.
+
+    Inputs :
+    - y ndarray (N, ) : labels
+    - tx ndarray (N, D) : data matrix
+    - lambda_ float : regularization strength
+    - initial_w ndarray (D, ) : initial weights
+    - max_iters int : number of iterations
+    - gamma float : learning rate
+
+    Returns :
+    - w ndarray (D, ) : final weights
+    - loss float : final regularized logistic loss
+    """
+
+    w = initial_w
+
+    for _ in range(max_iters):
+        grad = compute_logistic_gradient(y, tx, w)
+        grad += lambda_ * w
+        w -= gamma * grad
+
+    loss = compute_logistic_loss(y, tx, w)
+    loss += lambda_ / 2 * np.sum(w**2)
+
+    return w, loss
