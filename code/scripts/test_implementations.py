@@ -18,17 +18,17 @@ ATOL = 1e-8
 
 
 # Same toy data as the public grading tests.
-@pytest.fixture()
+@pytest.fixture
 def y():
     return np.array([0.1, 0.3, 0.5])
 
 
-@pytest.fixture()
+@pytest.fixture
 def tx():
     return np.array([[2.3, 3.2], [1.0, 0.1], [1.4, 2.3]])
 
 
-@pytest.fixture()
+@pytest.fixture
 def random_data():
     rng = np.random.default_rng(0)
     N, D = 200, 5
@@ -108,9 +108,8 @@ def test_least_squares_is_optimal(random_data):
 def test_ridge_regression_returns_w_and_loss(y, tx):
     result = impl.ridge_regression(y, tx, 1.0)
 
-    assert isinstance(result, tuple) and len(result) == 2, (
-        "ridge_regression must return (w, loss)"
-    )
+    assert isinstance(result, tuple), "ridge_regression must return (w, loss)"
+    assert len(result) == 2, "ridge_regression must return (w, loss)"
 
 
 def test_ridge_regression_lambda0_public_values(y, tx):
