@@ -105,6 +105,9 @@ def ridge_regression(y, tx, lambda_):
 
 
 def sigmoid(t):
+    # Avoid overflow in exp for large negative values
+    t = np.clip(t, -500, 500)
+
     return 1 / (1 + np.exp(-t))
 
 
@@ -159,30 +162,31 @@ def compute_logistic_gradient(y, tx, w):
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     raise NotImplementedError
 
+
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """Regularized logistic regression using gradient descent.
 
-    Inputs :
-    - y ndarray (N, ) : labels
-    - tx ndarray (N, D) : data matrix
-    - lambda_ float : regularization strength
-    - initial_w ndarray (D, ) : initial weights
-    - max_iters int : number of iterations
-    - gamma float : learning rate
+    Inputs:
+    - y ndarray (N,): labels
+    - tx ndarray (N, D): data matrix
+    - lambda_ float: regularization strength
+    - initial_w ndarray (D,): initial weights
+    - max_iters int: number of iterations
+    - gamma float: learning rate
 
-    Returns :
-    - w ndarray (D, ) : final weights
-    - loss float : final regularized logistic loss
+    Returns:
+    - w ndarray (D,): final weights
+    - loss float: logistic loss without the regularization penalty
     """
 
-    w = initial_w
+    w = initial_w.copy()
 
     for _ in range(max_iters):
         grad = compute_logistic_gradient(y, tx, w)
         grad += lambda_ * w
         w -= gamma * grad
 
+    # The returned loss must NOT include the regularization penalty.
     loss = compute_logistic_loss(y, tx, w)
-    loss += lambda_ / 2 * np.sum(w**2)
 
     return w, loss
