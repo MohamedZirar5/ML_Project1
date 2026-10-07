@@ -82,8 +82,44 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     return w, loss
 
 def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
-    raise NotImplementedError
+    """Linear regression using stochastic gradient descent
 
+    Inputs : 
+
+    - y ndarray (N,) : expected output
+
+    - tx ndarray (N, D) : features matrix
+
+    - initial_w  ndarray (D,) : initial weights
+
+    - max_iters int : maximum of iterations
+
+    - gamma float : stepsize
+
+    Returns :
+
+    - w ndarray (D,) : learned weights
+
+    - loss float : MSE loss with stochastic gradient descent
+    
+    """
+
+    w = initial_w.copy()
+    iter = 0
+
+    while iter < max_iters:
+        idx = np.random.randint(y.shape[0])
+        y_sample = y[[idx]]
+        tx_sample = tx[[idx]]
+
+        sto_grad = compute_gradient(y_sample, tx_sample, w)
+        w = w - gamma * sto_grad
+        
+        iter += 1
+
+    loss = compute_loss(y, tx, w)
+
+    return w, loss
 
 def least_squares(y, tx):
     raise NotImplementedError
@@ -153,7 +189,39 @@ def compute_logistic_gradient(y, tx, w):
     return gradient
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
-    raise NotImplementedError
+    """This function 
+
+    Inputs : 
+    
+        - y ndarray (N,) : expected output
+    
+        - tx ndarray (N, D) : features matrix
+    
+        - initial_w  ndarray (D,) : initial weights
+    
+        - max_iters int : maximum of iterations
+    
+        - gamma float : stepsize
+    
+        Returns :
+    
+        - w ndarray (D,) : weights
+    
+        - loss float : loss of logistic regression
+        
+    """
+
+    w = initial_w.copy()
+    iter = 0
+
+    while iter < max_iters:
+        grad = compute_logistic_gradient(y, tx, w)
+        w = w - gamma * grad
+        iter += 1
+
+    loss = compute_logistic_loss(y, tx, w)
+
+    return w, loss
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """Regularized logistic regression using gradient descent.
