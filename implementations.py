@@ -131,7 +131,7 @@ def compute_logistic_loss(y, tx, w):
     # pred = tx @ w is the linear prediction.
     pred = tx @ w
 
-    # Starting from the cross-entropy loss and replacing the sigmoid,
+    # Starting from the cross-entropy loss and replacing the sigmoid then rearranging,
     # we obtain the equivalent expression:
     # log(1 + exp(pred)) - y * pred.
     # np.logaddexp(0, pred) computes log(exp(0) + exp(pred)) = log(1 + exp(pred)).
@@ -152,12 +152,19 @@ def compute_logistic_gradient(y, tx, w):
     """
 
     N = y.shape[0]
+
+    # pred = tx @ w is the linear prediction.
     pred = tx @ w
+
+    # sigmoid(pred) converts the linear prediction into probabilities
+    # between 0 and 1.
     prob = sigmoid(pred)
+
+    # The gradient of the cross-entropy loss is
+    # X^T (sigmoid(pred) - y), averaged over all samples, using the chain rule.
     gradient = tx.T @ (prob - y) / N
 
     return gradient
-
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     raise NotImplementedError
