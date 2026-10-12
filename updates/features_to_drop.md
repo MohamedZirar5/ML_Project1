@@ -3,6 +3,20 @@
 - Infor about cardiac rehab - its kind of giving info that there was already a cardiac probem -- data leakage?
 - Infor about astma, prostate cancer etc ?
 - HIV shots HPVADSHT is it imprtant?
+
+## How we organize the drop list
+
+We don't want to drop a feature just because it has a lot of missing values. Some missing values can also give information. First we look at what the column actually means, and then we put it in one of these groups:
+
+- administrative information: IDs, interview dates, phone screening, survey weights, and other information about how the interview was done;
+- leakage risk: questions that can be asked after a heart problem, such as cardiac rehabilitation, aspirin, or advice from a doctor;
+- optional modules: questions asked only in some states or only to a small subgroup of people;
+- follow-up questions: questions asked only after a previous answer, for example diabetes, smoking, arthritis, or cancer-screening follow-ups;
+- data-quality flags: columns saying that another answer is missing or implausible;
+- redundant features: several columns measuring the same thing when the BRFSS already provides a cleaner summary variable.
+
+This way the decision is easier to understand and to change. The list is still written explicitly because we want to be able to check every group. The missing-value ratio is used as a diagnostic, not as the only reason for dropping a feature. All decisions are made from the training data and the test data is only transformed with the selected columns.
+
 Drop all of these too. They're almost entirely optional state modules, follow-ups that only certain people were asked, or data about someone other than the respondent. Grouped so you can see why:
 Aspirin module (CVDASPRN, RDUCHART, RDUCSTRK, RLIVPAIN, ASPUNSAF): these are about taking aspirin to prevent heart attack or stroke. Like the rehab questions before, they're a leakage risk, because people with heart disease are often told to take aspirin. Drop them even though they sound relevant.
 Sodium module (WTCHSALT, DRADVISE, LONGWTCH): "Did a doctor advise you to reduce salt?" is also leaky, since that advice often follows a heart or blood pressure diagnosis.

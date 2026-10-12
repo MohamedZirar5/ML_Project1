@@ -1,12 +1,12 @@
 # CLASS IMBALANCE
 
 **3|4 ways how to deal with it:**
-- random undersampling (pretty bad idea hihihihi)
+- ~~random undersampling (pretty bad idea hihihihi) --> definetly a bad idea, we will loose too much data~~
 - random oversampling (pretty simple and stupid idea probably)
-- oversampling w SMOTE (artificial creation of new samples for imbalanced class... the best idea so far)
+- oversampling w SMOTE (artificial creation of new samples for imbalanced class... the best idea so far) --> create too many linear pattern (we have to watch out)
 - Upweight the downsampled class
-- oversampling w ADASYN
-- Undersampling with Tomek Link
+- oversampling w ADASYN --> second best idea, I think we should try this aswell
+- Undersampling with Tomek Link 
 - Oversampling with SMOTE, then undersample with TOMEK Link (SMOTE-Tomek)
 
 
