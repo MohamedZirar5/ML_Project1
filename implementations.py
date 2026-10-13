@@ -119,14 +119,28 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     return w, loss
 
 def least_squares(y, tx):
-    raise NotImplementedError
+    """Least-squares regression using the normal equations."""
+
+    A = tx.T @ tx
+    b = tx.T @ y
+    w = np.linalg.solve(A, b)
+    return w, compute_loss(y, tx, w)
 
 
 def ridge_regression(y, tx, lambda_):
-    raise NotImplementedError
+    """Ridge regression using the regularized normal equations."""
+
+    N, D = tx.shape
+    A = tx.T @ tx + 2 * N * lambda_ * np.eye(D)
+    b = tx.T @ y
+    w = np.linalg.solve(A, b)
+    return w, compute_loss(y, tx, w)
 
 
 def sigmoid(t):
+    # Avoid overflow in exp for large negative values
+    t = np.clip(t, -500, 500)
+
     return 1 / (1 + np.exp(-t))
 
 
@@ -218,34 +232,29 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 
     return w, loss
 
+
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """Regularized logistic regression using gradient descent.
 
-    Inputs :
-    - y ndarray (N, ) : labels
-    - tx ndarray (N, D) : data matrix
-    - lambda_ float : regularization strength
-    - initial_w ndarray (D, ) : initial weights
-    - max_iters int : number of iterations
-    - gamma float : learning rate
+    Inputs:
+    - y ndarray (N,): labels
+    - tx ndarray (N, D): data matrix
+    - lambda_ float: regularization strength
+    - initial_w ndarray (D,): initial weights
+    - max_iters int: number of iterations
+    - gamma float: learning rate
 
-    Returns :
-    - w ndarray (D, ) : final weights
-    - loss float : logistic loss without the regularization penalty
+    Returns:
+    - w ndarray (D,): final weights
+    - loss float: logistic loss without the regularization penalty
     """
 
-    # Copy so the caller's initial_w is not modified by the in-place update.
     w = initial_w.copy()
 
     for _ in range(max_iters):
-
-        # Compute the gradient of the logistic loss.
         grad = compute_logistic_gradient(y, tx, w)
-
-        # Add the gradient of the penalty lambda * ||w||^2, which is 2 * lambda * w.
+        # The penalty lambda * ||w||^2 has gradient 2 * lambda * w.
         grad += 2 * lambda_ * w
-
-        # Gradient descent update.
         w -= gamma * grad
 
     # The returned loss must NOT include the regularization penalty.
