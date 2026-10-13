@@ -105,17 +105,14 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     """
 
     w = initial_w.copy()
-    iter = 0
 
-    while iter < max_iters:
+    for _ in range(max_iters):
         idx = np.random.randint(y.shape[0])
         y_sample = y[[idx]]
         tx_sample = tx[[idx]]
 
         sto_grad = compute_gradient(y_sample, tx_sample, w)
         w = w - gamma * sto_grad
-        
-        iter += 1
 
     loss = compute_loss(y, tx, w)
 
@@ -189,9 +186,9 @@ def compute_logistic_gradient(y, tx, w):
     return gradient
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
-    """This function 
+    """Logistic regression using gradient descent.
 
-    Inputs : 
+    Inputs :
     
         - y ndarray (N,) : expected output
     
@@ -212,12 +209,10 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """
 
     w = initial_w.copy()
-    iter = 0
 
-    while iter < max_iters:
+    for _ in range(max_iters):
         grad = compute_logistic_gradient(y, tx, w)
         w = w - gamma * grad
-        iter += 1
 
     loss = compute_logistic_loss(y, tx, w)
 
@@ -236,26 +231,24 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
     Returns :
     - w ndarray (D, ) : final weights
-    - loss float : final regularized logistic loss
+    - loss float : logistic loss without the regularization penalty
     """
 
-    w = initial_w
+    # Copy so the caller's initial_w is not modified by the in-place update.
+    w = initial_w.copy()
 
     for _ in range(max_iters):
 
         # Compute the gradient of the logistic loss.
         grad = compute_logistic_gradient(y, tx, w)
 
-        # Add the gradient of the L2 regularization term.
-        grad += lambda_ * w
+        # Add the gradient of the penalty lambda * ||w||^2, which is 2 * lambda * w.
+        grad += 2 * lambda_ * w
 
         # Gradient descent update.
         w -= gamma * grad
 
-    # Compute the logistic loss.
+    # The returned loss must NOT include the regularization penalty.
     loss = compute_logistic_loss(y, tx, w)
-
-    # Add the L2 regularization penalty.
-    loss += lambda_ / 2 * np.sum(w ** 2)
 
     return w, loss
