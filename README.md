@@ -10,9 +10,10 @@ This repository contains our code and report for Project 1 of the EPFL Machine L
 
 ## Repository Structure
 * `implementations.py`: linear and logistic regression implementations. It stays at the repository root because the official grader imports it from there.
-* `code/helpers.py`: data loading and submission helper functions.
+* `helpers.py`: data loading and submission helper functions (course template).
 * `code/scripts/test_implementations.py`: additional local tests for the implemented functions.
 * `notebooks/`: data cleaning and missing-value analysis notebooks.
+* `02_ChrisNotebook1.ipynb`: first logistic-regression experiment (grid search + submission).
 * `dataset/`: training, test, and cleaned data files.
 * `run.py`: entry point for running the project experiments.
 * `project1_description.pdf`: project brief and requirements.
