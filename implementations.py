@@ -105,31 +105,42 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     """
 
     w = initial_w.copy()
-    iter = 0
 
-    while iter < max_iters:
+    for _ in range(max_iters):
         idx = np.random.randint(y.shape[0])
         y_sample = y[[idx]]
         tx_sample = tx[[idx]]
 
         sto_grad = compute_gradient(y_sample, tx_sample, w)
         w = w - gamma * sto_grad
-        
-        iter += 1
 
     loss = compute_loss(y, tx, w)
 
     return w, loss
 
 def least_squares(y, tx):
-    raise NotImplementedError
+    """Least-squares regression using the normal equations."""
+
+    A = tx.T @ tx
+    b = tx.T @ y
+    w = np.linalg.solve(A, b)
+    return w, compute_loss(y, tx, w)
 
 
 def ridge_regression(y, tx, lambda_):
-    raise NotImplementedError
+    """Ridge regression using the regularized normal equations."""
+
+    N, D = tx.shape
+    A = tx.T @ tx + 2 * N * lambda_ * np.eye(D)
+    b = tx.T @ y
+    w = np.linalg.solve(A, b)
+    return w, compute_loss(y, tx, w)
 
 
 def sigmoid(t):
+    # Avoid overflow in exp for large negative values
+    t = np.clip(t, -500, 500)
+
     return 1 / (1 + np.exp(-t))
 
 
@@ -189,9 +200,9 @@ def compute_logistic_gradient(y, tx, w):
     return gradient
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
-    """This function 
+    """Logistic regression using gradient descent.
 
-    Inputs : 
+    Inputs :
     
         - y ndarray (N,) : expected output
     
@@ -212,50 +223,41 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """
 
     w = initial_w.copy()
-    iter = 0
 
-    while iter < max_iters:
+    for _ in range(max_iters):
         grad = compute_logistic_gradient(y, tx, w)
         w = w - gamma * grad
-        iter += 1
 
     loss = compute_logistic_loss(y, tx, w)
 
     return w, loss
 
+
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """Regularized logistic regression using gradient descent.
 
-    Inputs :
-    - y ndarray (N, ) : labels
-    - tx ndarray (N, D) : data matrix
-    - lambda_ float : regularization strength
-    - initial_w ndarray (D, ) : initial weights
-    - max_iters int : number of iterations
-    - gamma float : learning rate
+    Inputs:
+    - y ndarray (N,): labels
+    - tx ndarray (N, D): data matrix
+    - lambda_ float: regularization strength
+    - initial_w ndarray (D,): initial weights
+    - max_iters int: number of iterations
+    - gamma float: learning rate
 
-    Returns :
-    - w ndarray (D, ) : final weights
-    - loss float : final regularized logistic loss
+    Returns:
+    - w ndarray (D,): final weights
+    - loss float: logistic loss without the regularization penalty
     """
 
-    w = initial_w
+    w = initial_w.copy()
 
     for _ in range(max_iters):
-
-        # Compute the gradient of the logistic loss.
         grad = compute_logistic_gradient(y, tx, w)
-
-        # Add the gradient of the L2 regularization term.
-        grad += lambda_ * w
-
-        # Gradient descent update.
+        # The penalty lambda * ||w||^2 has gradient 2 * lambda * w.
+        grad += 2 * lambda_ * w
         w -= gamma * grad
 
-    # Compute the logistic loss.
+    # The returned loss must NOT include the regularization penalty.
     loss = compute_logistic_loss(y, tx, w)
-
-    # Add the L2 regularization penalty.
-    loss += lambda_ / 2 * np.sum(w ** 2)
 
     return w, loss

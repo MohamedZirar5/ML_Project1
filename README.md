@@ -9,9 +9,14 @@
 This repository contains our code and report for Project 1 of the EPFL Machine Learning course (CS-433) Fall 2026. The objective of this project is to predict the risk of cardiovascular disease (MICHD) using health-related survey data from the BRFSS dataset.
 
 ## Repository Structure
-* `implementations.py`: linear and logistic regression implementations.
+* `implementations.py`: linear and logistic regression implementations. It stays at the repository root because the official grader imports it from there.
+* `helpers.py`: data loading and submission helper functions (course template).
+* `code/scripts/test_implementations.py`: additional local tests for the implemented functions.
+* `notebooks/`: data cleaning and missing-value analysis notebooks.
+* `02_ChrisNotebook1.ipynb`: first logistic-regression experiment (grid search + submission).
+* `dataset/`: training, test, and cleaned data files.
 * `run.py`: entry point for running the project experiments.
-* `project1_description copie.pdf`: project brief and requirements.
+* `project1_description.pdf`: project brief and requirements.
 
 ## Requirements & Constraints
 * **Python Version:** Python 3.x
@@ -29,6 +34,14 @@ Create the project environment from `grading_tests/environment.yml`, then run:
 conda env create -f grading_tests/environment.yml -n project1-grading
 conda activate project1-grading
 python run.py
+```
+
+To work through the data preparation notebooks, open the files in `notebooks/` from
+Jupyter or VS Code. Run the local implementation tests with:
+
+```bash
+conda run --no-capture-output -n project1-grading \
+	python -m pytest code/scripts/test_implementations.py -q
 ```
 
 On Apple Silicon, if the pinned `scikit-learn` version is unavailable, create the
