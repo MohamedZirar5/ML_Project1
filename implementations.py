@@ -81,8 +81,43 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
 
     return w, loss
 
+
 def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
-    raise NotImplementedError
+    """Linear regression using stochastic gradient descent
+
+    Inputs :
+
+    - y ndarray (N,) : expected output
+
+    - tx ndarray (N, D) : features matrix
+
+    - initial_w  ndarray (D,) : initial weights
+
+    - max_iters int : maximum of iterations
+
+    - gamma float : stepsize
+
+    Returns :
+
+    - w ndarray (D,) : learned weights
+
+    - loss float : MSE loss with stochastic gradient descent
+
+    """
+
+    w = initial_w.copy()
+
+    for _ in range(max_iters):
+        idx = np.random.randint(y.shape[0])
+        y_sample = y[[idx]]
+        tx_sample = tx[[idx]]
+
+        sto_grad = compute_gradient(y_sample, tx_sample, w)
+        w = w - gamma * sto_grad
+
+    loss = compute_loss(y, tx, w)
+
+    return w, loss
 
 
 def least_squares(y, tx):
@@ -113,7 +148,7 @@ def sigmoid(t):
 
 def compute_logistic_loss(y, tx, w):
     """Logistic loss implementation.
-    
+
     Inputs :
 
     - y ndarray (N, ) : labels
@@ -124,7 +159,7 @@ def compute_logistic_loss(y, tx, w):
 
     Returns :
 
-    - loss float : cross-entropy loss for logistic regression     """
+    - loss float : cross-entropy loss for logistic regression"""
 
     N = y.shape[0]
 
@@ -138,6 +173,7 @@ def compute_logistic_loss(y, tx, w):
     loss = np.sum(np.logaddexp(0, pred) - y * pred) / N
 
     return loss
+
 
 def compute_logistic_gradient(y, tx, w):
     """Gradient of the logistic loss implementation.
@@ -166,8 +202,39 @@ def compute_logistic_gradient(y, tx, w):
 
     return gradient
 
+
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
-    raise NotImplementedError
+    """Logistic regression using gradient descent.
+
+    Inputs :
+
+        - y ndarray (N,) : expected output
+
+        - tx ndarray (N, D) : features matrix
+
+        - initial_w  ndarray (D,) : initial weights
+
+        - max_iters int : maximum of iterations
+
+        - gamma float : stepsize
+
+        Returns :
+
+        - w ndarray (D,) : weights
+
+        - loss float : loss of logistic regression
+
+    """
+
+    w = initial_w.copy()
+
+    for _ in range(max_iters):
+        grad = compute_logistic_gradient(y, tx, w)
+        w = w - gamma * grad
+
+    loss = compute_logistic_loss(y, tx, w)
+
+    return w, loss
 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
@@ -190,7 +257,8 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
     for _ in range(max_iters):
         grad = compute_logistic_gradient(y, tx, w)
-        grad += lambda_ * w
+        # The penalty lambda * ||w||^2 has gradient 2 * lambda * w.
+        grad += 2 * lambda_ * w
         w -= gamma * grad
 
     # The returned loss must NOT include the regularization penalty.
