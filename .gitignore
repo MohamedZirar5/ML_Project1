@@ -13,3 +13,4 @@ dataset/prepared/
 submission.csv
 submission_mse_gd.csv
 submission_regularized_logistic.csv
+submission_experiments.csv

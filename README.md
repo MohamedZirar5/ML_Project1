@@ -11,9 +11,15 @@ This repository contains our code and report for Project 1 of the EPFL Machine L
 ## Repository Structure
 * `implementations.py`: linear and logistic regression implementations. It stays at the repository root because the official grader imports it from there.
 * `helpers.py`: data loading and submission helper functions (course template).
+* `metrics.py`: accuracy, precision, recall, F1 and the F1-optimal decision threshold.
+* `cross_validation.py`: stratified k-fold cross-validation for all six models, with optional under/oversampling of the training folds.
+* `grid_search.py`: hyperparameter grid search on top of cross-validation (`python grid_search.py --model ridge_regression`).
 * `code/scripts/test_implementations.py`: additional local tests for the implemented functions.
+* `code/scripts/test_model_selection.py`: tests for the metrics, cross-validation and grid search.
 * `notebooks/`: data cleaning and missing-value analysis notebooks.
 * `02_ChrisNotebook1.ipynb`: first logistic-regression experiment (grid search + submission).
+* `notebooks/03_mean_squared_error_gd.ipynb`, `notebooks/04_regularized_logistic_regression.ipynb`: MSE GD and regularized logistic regression, tuned on a stratified 80/20 split, with submissions.
+* `notebooks/05_model_selection_cv.ipynb`: comparison of all six models with stratified 5-fold cross-validation (same hyperparameter grids as notebooks 03 and 04).
 * `dataset/`: training, test, and cleaned data files.
 * `run.py`: entry point for running the project experiments.
 * `project1_description.pdf`: project brief and requirements.
