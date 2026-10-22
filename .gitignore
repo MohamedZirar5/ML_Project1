@@ -11,3 +11,5 @@ dataset/cleaning_statistics.npz
 .pytest_cache
 dataset/prepared/
 submission.csv
+submission_mse_gd.csv
+submission_regularized_logistic.csv
