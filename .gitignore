@@ -12,3 +12,4 @@ dataset/cleaning_statistics.npz
 dataset/prepared/
 submission.csv
 submission_mse_gd.csv
+submission_regularized_logistic.csv
