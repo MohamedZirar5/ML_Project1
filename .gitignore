@@ -14,3 +14,7 @@ submission.csv
 submission_mse_gd.csv
 submission_regularized_logistic.csv
 submission_experiments.csv
+submission_ridge.csv
+submission_ridge_best.csv
+submission_least_squares_best.csv
+submission_logistic_best.csv

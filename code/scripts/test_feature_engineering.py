@@ -56,3 +56,14 @@ def test_build_features_small():
     # Interactions only with columns from the base (notebook 01) set.
     assert "_AGE80*GENHLTH=2" in out
     assert not any(name.startswith("_AGE80*BPMEDS") for name in out)
+
+
+def test_independent_columns_drops_exact_combinations():
+    rng = np.random.default_rng(0)
+    a, b = rng.normal(size=(2, 200))
+    onehot = (rng.random(200) < 0.3).astype(float)
+    # columns: bias, a, b, a + 2b (dependent), onehot, 1 - onehot (dependent with bias)
+    tx = np.c_[np.ones(200), a, b, a + 2 * b, onehot, 1 - onehot]
+    keep = fe.independent_columns(tx)
+    assert list(keep) == [0, 1, 2, 4]
+    assert np.linalg.matrix_rank(tx[:, keep]) == len(keep) == np.linalg.matrix_rank(tx)

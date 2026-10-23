@@ -320,6 +320,8 @@ def build_features(
         for k in numeric_tr:
             sq_tr, sq_te = tr_cols[k] ** 2, te_cols[k] ** 2
             mu, sigma = sq_tr.mean(), sq_tr.std()
+            if sigma < 1e-12:
+                continue  # two symmetric values -> constant square, no information
             add((sq_tr - mu) / sigma, (sq_te - mu) / sigma, f"{out_names[k]}^2", sources[k])
 
     base_sources = set(raw["names"][selected_columns(raw["names"])])
@@ -334,10 +336,54 @@ def build_features(
     return np.column_stack(tr_cols), np.column_stack(te_cols), np.array(out_names)
 
 
+# ------------------------------------------------------- collinearity removal
+
+
+def independent_columns(tx, tol=1e-9):
+    """Indices of a maximal set of linearly independent columns of `tx`.
+
+    One-hot groups, missing indicators and derived columns (e.g. age in years
+    and age bands) make some columns exact linear combinations of others, so
+    tx.T @ tx is singular and least squares has no unique solution. Ridge
+    hides this with its penalty; least squares needs the redundant columns
+    removed.
+
+    Greedy Gram-Schmidt on the Gram matrix G = tx.T @ tx / N: a column is
+    kept if the part of it not explained by the columns already kept has a
+    squared norm above `tol` times its own. Uses no labels.
+
+    Returns :
+
+    - keep ndarray of int : column indices to keep, in their original order"""
+
+    gram = tx.T @ tx / len(tx)
+    keep = []
+    chol = np.zeros((0, 0))  # Cholesky factor of gram[keep][:, keep]
+
+    for j in range(gram.shape[0]):
+        if keep:
+            z = np.linalg.solve(chol, gram[keep, j])
+            residual = gram[j, j] - z @ z
+        else:
+            z, residual = np.zeros(0), gram[j, j]
+        if residual > tol * max(gram[j, j], 1e-300):
+            k = len(keep)
+            new = np.zeros((k + 1, k + 1))
+            new[:k, :k] = chol
+            new[k, :k] = z
+            new[k, k] = np.sqrt(residual)
+            chol = new
+            keep.append(j)
+
+    return np.array(keep)
+
+
 # ------------------------------------------------- Newton logistic regression
 
 
-def reg_logistic_newton(y, tx, lambda_, max_iters=30, tol=1e-8, chunk_rows=50_000):
+def reg_logistic_newton(
+    y, tx, lambda_, max_iters=30, tol=1e-8, chunk_rows=50_000, pos_weight=1.0
+):
     """L2-regularized logistic regression solved with Newton's method.
 
     Minimizes the same objective as implementations.reg_logistic_regression
@@ -348,6 +394,9 @@ def reg_logistic_newton(y, tx, lambda_, max_iters=30, tol=1e-8, chunk_rows=50_00
     A step is halved until the objective decreases (needed only far from
     the optimum).
 
+    With `pos_weight` != 1 every positive row counts `pos_weight` times in
+    the (weighted average) logistic loss, an alternative to undersampling.
+
     Returns :
 
     - w ndarray (D, ) : weights
@@ -356,18 +405,21 @@ def reg_logistic_newton(y, tx, lambda_, max_iters=30, tol=1e-8, chunk_rows=50_00
 
     n, d = tx.shape
     w = np.zeros(d)
+    # Row weights summing to 1; all equal to 1/n for pos_weight = 1.
+    c = np.where(y == 1, pos_weight, 1.0)
+    c = c / c.sum()
 
     def objective(w):
         z = tx @ w
-        return np.mean(np.logaddexp(0, z) - y * z) + lambda_ * w @ w
+        return c @ (np.logaddexp(0, z) - y * z) + lambda_ * w @ w
 
     current = objective(w)
     for it in range(1, max_iters + 1):
         p = 1 / (1 + np.exp(-np.clip(tx @ w, -500, 500)))
-        grad = tx.T @ (p - y) / n + 2 * lambda_ * w
+        grad = tx.T @ (c * (p - y)) + 2 * lambda_ * w
         # X^T S X built in row chunks, so we never copy the whole matrix.
         hessian = 2 * lambda_ * np.eye(d)
-        s = p * (1 - p) / n
+        s = c * p * (1 - p)
         for i in range(0, n, chunk_rows):
             block = tx[i:i + chunk_rows]
             hessian += (block * s[i:i + chunk_rows, None]).T @ block
