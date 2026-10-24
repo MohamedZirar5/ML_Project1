@@ -106,7 +106,7 @@ def build_k_indices(y, k_fold, seed=1, stratified=True):
     if stratified:
         folds = [[] for _ in range(k_fold)]
         for label in np.unique(y):
-            label_idx = rng.permutation(np.where(y == label)[0])
+            label_idx = rng.permutation(np.nonzero(y == label)[0])
             for k, chunk in enumerate(np.array_split(label_idx, k_fold)):
                 folds[k].append(chunk)
         return [rng.permutation(np.concatenate(fold)) for fold in folds]
@@ -132,8 +132,8 @@ def random_undersample(x, y, seed=1, ratio=1.0):
     """Keep all positives and `ratio * n_pos` random negatives."""
 
     rng = np.random.default_rng(seed)
-    pos = np.where(y == 1)[0]
-    neg = np.where(y == 0)[0]
+    pos = np.nonzero(y == 1)[0]
+    neg = np.nonzero(y == 0)[0]
 
     n_neg = min(len(neg), int(ratio * len(pos)))
     idx = rng.permutation(np.r_[pos, rng.choice(neg, n_neg, replace=False)])
@@ -144,8 +144,8 @@ def random_oversample(x, y, seed=1, ratio=1.0):
     """Duplicate random positives until n_pos = `ratio * n_neg`."""
 
     rng = np.random.default_rng(seed)
-    pos = np.where(y == 1)[0]
-    neg = np.where(y == 0)[0]
+    pos = np.nonzero(y == 1)[0]
+    neg = np.nonzero(y == 0)[0]
 
     n_extra = max(0, int(ratio * len(neg)) - len(pos))
     idx = rng.permutation(np.r_[neg, pos, rng.choice(pos, n_extra, replace=True)])

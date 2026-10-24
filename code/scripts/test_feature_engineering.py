@@ -48,7 +48,8 @@ def test_build_features_small():
     x_tr, x_te, out = fe.build_features(raw, min_level_count=1)
     # GENHLTH: 9 -> missing level (-1), one-hot drops the first level (-1).
     assert list(out) == ["_AGE80", "_AGE80_missing", "GENHLTH=1", "GENHLTH=2"]
-    assert x_tr.shape == (40, 4) and x_te.shape == (3, 4)
+    assert x_tr.shape == (40, 4)
+    assert x_te.shape == (3, 4)
     assert not np.isnan(x_tr).any()
 
     _, _, out = fe.build_features(raw, keep_groups=("risk_management",),

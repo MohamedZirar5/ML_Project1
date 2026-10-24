@@ -45,7 +45,8 @@ def test_metrics_known_values():
 
 def test_metrics_no_positive_predictions():
     m = metrics.compute_metrics(np.array([1, 0]), np.array([0, 0]))
-    assert m["precision"] == 0.0 and m["f1"] == 0.0
+    assert m["precision"] == 0.0
+    assert m["f1"] == 0.0
 
 
 def test_to_binary():

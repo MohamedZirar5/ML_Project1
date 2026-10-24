@@ -79,16 +79,16 @@ LARGE_MISSING_CODES = {77.0, 99.0, 777.0, 999.0, 7777.0, 9999.0, 99999.0}
 
 # Columns where the generic rule is wrong (checked in the BRFSS codebook).
 MISSING_CODE_OVERRIDES = {
-    "EMPLOY1": {9.0},          # 7 = "retired" is a real answer
-    "_RACE": {9.0},            # 7 = "multiracial, non-Hispanic"
-    "PHYSHLTH": {77.0, 99.0},  # 7 / 9 days are real values
+    "EMPLOY1": {9.0},          # code 7 means "retired", a real answer
+    "_RACE": {9.0},            # code 7 means "multiracial, non-Hispanic"
+    "PHYSHLTH": {77.0, 99.0},  # 7 or 9 days are real values
     "MENTHLTH": {77.0, 99.0},
     "_AGE80": set(),
     "_BMI5": set(),
     "_FRUTSUM": set(),
     "_VEGESUM": set(),
 }
-ZERO_CODES = {"PHYSHLTH": 88.0, "MENTHLTH": 88.0}  # 88 = "no days"
+ZERO_CODES = {"PHYSHLTH": 88.0, "MENTHLTH": 88.0}  # code 88 means "no days"
 
 
 def missing_codes_for(name, train_column):
@@ -278,17 +278,39 @@ def build_features(
     x_tr, x_te, names = x_tr[:, informative], x_te[:, informative], names[informative]
 
     is_cat = detect_categorical(x_tr, names)
-    tr_cols, te_cols, out_names, sources = [], [], [], []
+    out = _Columns()
+    numeric = _add_numeric(out, x_tr, x_te, names, np.nonzero(~is_cat)[0])
+    _add_categorical(out, x_tr, x_te, names, np.nonzero(is_cat)[0], min_level_count)
+    if square_numeric:
+        _add_squares(out, numeric)
+    base_sources = set(raw["names"][selected_columns(raw["names"])])
+    _add_interactions(out, interact_with, base_sources)
 
-    def add(train_col, test_col, name, source):
-        tr_cols.append(train_col)
-        te_cols.append(test_col)
-        out_names.append(name)
-        sources.append(source)
+    return np.column_stack(out.train), np.column_stack(out.test), np.array(out.names)
 
-    # Numeric: impute, flag, clip, standardize.
-    numeric_tr = []
-    for j in np.nonzero(~is_cat)[0]:
+
+class _Columns:
+    """Output columns of `build_features`, built one at a time.
+
+    `sources` keeps the raw column each output column comes from."""
+
+    def __init__(self):
+        self.train, self.test, self.names, self.sources = [], [], [], []
+
+    def add(self, train_col, test_col, name, source):
+        self.train.append(train_col)
+        self.test.append(test_col)
+        self.names.append(name)
+        self.sources.append(source)
+
+
+def _add_numeric(out, x_tr, x_te, names, columns):
+    """Impute (median), flag missing, clip and standardize numeric columns.
+
+    Returns the output indices of the standardized columns."""
+
+    numeric = []
+    for j in columns:
         col_tr, col_te = x_tr[:, j].copy(), x_te[:, j].copy()
         missing_tr, missing_te = np.isnan(col_tr), np.isnan(col_te)
         median = np.nanmedian(col_tr)
@@ -298,42 +320,52 @@ def build_features(
         col_tr, col_te = np.clip(col_tr, lo, hi), np.clip(col_te, lo, hi)
         mu, sigma = col_tr.mean(), col_tr.std()
         sigma = sigma if sigma > 0 else 1.0
-        z_tr, z_te = (col_tr - mu) / sigma, (col_te - mu) / sigma
 
-        add(z_tr, z_te, names[j], names[j])
-        numeric_tr.append(len(out_names) - 1)
+        out.add((col_tr - mu) / sigma, (col_te - mu) / sigma, names[j], names[j])
+        numeric.append(len(out.names) - 1)
         if missing_tr.mean() > 0.05:
-            add(missing_tr.astype(float), missing_te.astype(float),
-                f"{names[j]}_missing", names[j])
+            out.add(missing_tr.astype(float), missing_te.astype(float),
+                    f"{names[j]}_missing", names[j])
+    return numeric
 
-    # Categorical: missing = its own level (-1), one-hot without the first level.
-    for j in np.nonzero(is_cat)[0]:
+
+def _add_categorical(out, x_tr, x_te, names, columns, min_level_count):
+    """One-hot encode categorical columns, missing = its own level (-1).
+
+    The first level is dropped, and levels with fewer than `min_level_count`
+    training rows are skipped."""
+
+    for j in columns:
         col_tr = np.where(np.isnan(x_tr[:, j]), -1.0, x_tr[:, j])
         col_te = np.where(np.isnan(x_te[:, j]), -1.0, x_te[:, j])
         levels, counts = np.unique(col_tr, return_counts=True)
-        for level, count in zip(levels[1:], counts[1:]):
-            if count >= min_level_count:
-                add((col_tr == level).astype(float), (col_te == level).astype(float),
+        for level in levels[1:][counts[1:] >= min_level_count]:
+            out.add((col_tr == level).astype(float), (col_te == level).astype(float),
                     f"{names[j]}={level:g}", names[j])
 
-    if square_numeric:
-        for k in numeric_tr:
-            sq_tr, sq_te = tr_cols[k] ** 2, te_cols[k] ** 2
-            mu, sigma = sq_tr.mean(), sq_tr.std()
-            if sigma < 1e-12:
-                continue  # two symmetric values -> constant square, no information
-            add((sq_tr - mu) / sigma, (sq_te - mu) / sigma, f"{out_names[k]}^2", sources[k])
 
-    base_sources = set(raw["names"][selected_columns(raw["names"])])
-    base = len(out_names)
-    for partner in interact_with:
-        p = out_names.index(partner)
+def _add_squares(out, numeric):
+    """Standardized squares of the numeric output columns."""
+
+    for k in numeric:
+        sq_tr, sq_te = out.train[k] ** 2, out.test[k] ** 2
+        mu, sigma = sq_tr.mean(), sq_tr.std()
+        if sigma < 1e-12:
+            continue  # two symmetric values -> constant square, no information
+        out.add((sq_tr - mu) / sigma, (sq_te - mu) / sigma,
+                f"{out.names[k]}^2", out.sources[k])
+
+
+def _add_interactions(out, partners, base_sources):
+    """Products of each partner column with the columns from `base_sources`."""
+
+    base = len(out.names)
+    for partner in partners:
+        p = out.names.index(partner)
         for k in range(base):
-            if sources[k] in base_sources and sources[k] != sources[p]:
-                add(tr_cols[p] * tr_cols[k], te_cols[p] * te_cols[k],
-                    f"{partner}*{out_names[k]}", sources[k])
-
-    return np.column_stack(tr_cols), np.column_stack(te_cols), np.array(out_names)
+            if out.sources[k] in base_sources and out.sources[k] != out.sources[p]:
+                out.add(out.train[p] * out.train[k], out.test[p] * out.test[k],
+                        f"{partner}*{out.names[k]}", out.sources[k])
 
 
 # ------------------------------------------------------- collinearity removal
