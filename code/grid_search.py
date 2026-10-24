@@ -8,16 +8,20 @@ From Python:
 
 From the command line (uses dataset/prepared/clean_full.npz by default):
 
-    python grid_search.py --model ridge_regression
-    python grid_search.py --model reg_logistic_regression --undersample
+    python code/grid_search.py --model ridge_regression
+    python code/grid_search.py --model reg_logistic_regression --undersample
 """
 
 import argparse
 import itertools
+import sys
 import time
 from pathlib import Path
 
 import numpy as np
+
+# implementations.py lives at the repository root.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from cross_validation import (
     WARM_START_MODELS,
@@ -181,7 +185,7 @@ def load_prepared(path):
 
 
 def main():
-    root = Path(__file__).resolve().parent
+    root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--model", default="ridge_regression", choices=DEFAULT_GRIDS)
     parser.add_argument("--data", default=root / "dataset/prepared/clean_full.npz")

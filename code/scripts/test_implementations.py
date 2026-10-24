@@ -10,7 +10,9 @@ import sys
 import numpy as np
 import pytest
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))  # implementations.py
+sys.path.insert(0, str(ROOT / "code"))  # helper modules
 import implementations as impl  # noqa: E402
 
 RTOL = 1e-4

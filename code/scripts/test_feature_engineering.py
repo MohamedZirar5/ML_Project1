@@ -10,7 +10,9 @@ import sys
 import numpy as np
 import pytest
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))  # implementations.py
+sys.path.insert(0, str(ROOT / "code"))  # helper modules
 import feature_engineering as fe  # noqa: E402
 import implementations as impl  # noqa: E402
 
