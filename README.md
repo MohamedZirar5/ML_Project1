@@ -9,13 +9,21 @@
 This repository contains our code and report for Project 1 of the EPFL Machine Learning course (CS-433) Fall 2026. The objective of this project is to predict the risk of cardiovascular disease (MICHD) using health-related survey data from the BRFSS dataset.
 
 ## Repository Structure
-* `implementations.py`: linear and logistic regression implementations. It stays at the repository root because the official grader imports it from there.
-* `helpers.py`: data loading and submission helper functions (course template).
-* `code/scripts/test_implementations.py`: additional local tests for the implemented functions.
-* `notebooks/`: data cleaning and missing-value analysis notebooks.
-* `02_ChrisNotebook1.ipynb`: first logistic-regression experiment (grid search + submission).
-* `dataset/`: training, test, and cleaned data files.
-* `run.py`: entry point for running the project experiments.
+* `implementations.py`: the six required regression implementations. It stays at the repository root because the official grader imports it from there.
+* `run.py`: reproduces our best submission (AIcrowd F1 = 0.446) from the raw CSVs and writes `submission.csv`.
+* `code/`: everything else.
+  * `feature_engineering.py`: the notebook 01 cleaning with each excluded feature group as a switch, extra features (squares, interactions), removal of redundant columns, and regularized logistic regression solved with Newton's method.
+  * `cross_validation.py`: stratified k-fold cross-validation, with optional under/oversampling of the training folds.
+  * `metrics.py`: accuracy, precision, recall, F1 and the F1-optimal decision threshold.
+  * `grid_search.py`: hyperparameter grid search on top of cross-validation (`python code/grid_search.py --model ridge_regression`).
+  * `helpers.py`: data loading and submission helper functions (course template).
+  * `scripts/`: local tests (`pytest code/scripts -q`).
+* `notebooks/`:
+  * `01_data_exploration_and_cleaning.ipynb`: missing values, cleaning, class imbalance.
+  * `02_logistic_regression_experiment.ipynb`: first logistic-regression experiment.
+  * `03_mean_squared_error_gd.ipynb`, `04_regularized_logistic_regression.ipynb`: MSE GD and regularized logistic regression, tuned on a stratified 80/20 split.
+  * `05_feature_engineering_and_final_models.ipynb`: from the notebook 01 features to the final model, with stratified 5-fold cross-validation (threshold tuning, ridge, feature engineering, class imbalance, least squares, logistic regression with Newton's method).
+* `dataset/`: training and test data (not versioned).
 * `project1_description.pdf`: project brief and requirements.
 
 ## Requirements & Constraints
