@@ -36,7 +36,7 @@ This repository contains the source code and final report for **Project 1** of t
 ├── .gitignore                # Git ignore configuration
 ├── implementations.py        # The 6 required core ML implementations (at root for grader)
 ├── project1_description.pdf  # Official project guidelines
-├── Greganov_Zirar_Bitar_Project1_Report.pdf        # Team report for Project 1
+├── Greganova_Zirar_Bitar_Project1_Report.pdf        # Team report for Project 1
 ├── README.md                 # Project documentation
 ├── run.py                    # Main script reproducing the best submission
 └── test.sh                   # Automated testing script
